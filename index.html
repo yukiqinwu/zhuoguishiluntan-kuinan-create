@@ -326,6 +326,7 @@ const BOARDS = [
   { id:"lounge",   name:"捉鬼师摸鱼区", desc:"任务吐槽 · 装备保养 · 巡街闲聊" }
 ];
 
+// 修复点：将包含换行的长文本改用反引号（模板字符串），防止复制时出现格式错乱导致 JS 崩溃
 const POSTS = [
   {
     id:1, board:"general", title:"新人报到：第一次巡夜需要准备什么？",
@@ -406,16 +407,24 @@ const POSTS = [
   {
     id:9, board:"characters", character:"qin", title:"【求助】旧城区符纸连续失效，有同修遇到过吗",
     author:"qin", authorType:"character", tags:["秦大侠","求助","旧城区","符纸"], time:"2026-10-19 00:20", likes:27, views:640,
-    content:"各位同修好，打扰了。\n最近在旧城区巡夜时，遇到一个情况：同一批符纸，在别处都正常，到了旧城区几条巷子就连续失效，贴上后不到半刻就自行脱落。朱砂没有受潮，符纸也是新画的，我反复确认过步骤。\n想请教一下，有没有人遇到过类似情况？是地气问题、湿气问题，还是那一带有什么东西在干扰？\n如果有线索，麻烦告诉我，我会认真记下来。谢谢。",
+    content: `各位同修好，打扰了。
+最近在旧城区巡夜时，遇到一个情况：同一批符纸，在别处都正常，到了旧城区几条巷子就连续失效，贴上后不到半刻就自行脱落。朱砂没有受潮，符纸也是新画的，我反复确认过步骤。
+想请教一下，有没有人遇到过类似情况？是地气问题、湿气问题，还是那一带有什么东西在干扰？
+如果有线索，麻烦告诉我，我会认真记下来。谢谢。`,
     replies:[
-      { author:"luo", authorType:"character", content:"你先别急着往“那一带有什么东西”上想。\n旧城区那几条巷子湿气重，墙皮返潮，符纸贴上去不脱才怪。朱砂换干性的，贴之前把墙面烘一遍，别用你那种一受潮就软的纸。\n还有，失效就失效，别一个人半夜蹲那儿反复试。真有问题，白天再来，带上人。\n你要是非要觉得是地气，先把符贴正了再说。", likes:22 },
+      { author:"luo", authorType:"character", content: `你先别急着往“那一带有什么东西”上想。
+旧城区那几条巷子湿气重，墙皮返潮，符纸贴上去不脱才怪。朱砂换干性的，贴之前把墙面烘一遍，别用你那种一受潮就软的纸。
+还有，失效就失效，别一个人半夜蹲那儿反复试。真有问题，白天再来，带上人。
+你要是非要觉得是地气，先把符贴正了再说。`, likes:22 },
       { author:"ye", authorType:"npc", content:"旧城区那几条巷子确实潮，我上周也脱了两张。建议白天去，带烘干的东西。", likes:7 }
     ]
   },
   {
     id:10, board:"characters", character:"qin", title:"时间线整理：笔仙事件前后到底发生了什么",
     author:"qin", authorType:"character", tags:["秦大侠","时间线","笔仙"], time:"2026-10-17 21:00", likes:31, views:720,
-    content:"我把目前能确认的时间点按顺序列了一下，方便新来的同修对照。\n有出入的地方欢迎补充，我会慢慢改。\n不用急，一条一条来。",
+    content: `我把目前能确认的时间点按顺序列了一下，方便新来的同修对照。
+有出入的地方欢迎补充，我会慢慢改。
+不用急，一条一条来。`,
     replies:[
       { author:"du", authorType:"npc", content:"第三条和第五条之间好像少了一个晚上，我记得那天有巡街记录。", likes:6 },
       { author:"qin", authorType:"character", content:"谢谢提醒，我回头补上。你方便的话把巡街记录贴一下，我对照着改。", likes:11 }
@@ -460,7 +469,8 @@ const POSTS = [
   {
     id:15, board:"characters", character:"qing", title:"青龙的巡街路线分析",
     author:"qing", authorType:"character", tags:["青龙","巡街","路线"], time:"2026-10-17 20:10", likes:19, views:402,
-    content:"旧城区我一般按“三巷—五巷—老粮站—河堤”这个顺序走，逆着走容易漏掉背光面。\n新人跟队的话，先记路线，别急着记符。",
+    content: `旧城区我一般按“三巷—五巷—老粮站—河堤”这个顺序走，逆着走容易漏掉背光面。
+新人跟队的话，先记路线，别急着记符。`,
     replies:[
       { author:"map", authorType:"npc", content:"我就是逆着走迷路的，原来问题在这。", likes:4 },
       { author:"ye", authorType:"npc", content:"河堤那段晚上风大，符纸要压边。", likes:6 }
@@ -688,4 +698,713 @@ window.imgFallback = function(el, type){
 };
 
 function avatarHTML(p, cls){
-  const c = cls || "avatar"
+  const c = cls || "avatar";
+  if(p.type === "character"){
+    return `<img class="${c}" src="${esc(p.avatar)}" alt="${esc(p.name)}" onerror="imgFallback(this,'avatar')">`;
+  }
+  return `<img class="${c}" src="${DEFAULT_NPC_AVATAR}" alt="${esc(p.name)}">`;
+}
+
+function postImageHTML(src){
+  return `<div class="post-image">
+    <img src="${esc(src)}" alt="帖子配图" onerror="imgFallback(this,'post')">
+    <span class="img-note">图片占位：${esc(src)}</span>
+  </div>`;
+}
+
+function renderTopbar(){
+  const unread = unreadCount();
+  const navItems = [
+    ["home","首页"], ["boards","板块"], ["characters","角色专区"],
+    ["events","事件记录"], ["practice","捉鬼实务"], ["notes","手记"], ["lounge","摸鱼区"]
+  ];
+  let userArea = "";
+  if(isLoggedIn()){
+    userArea = `
+      <div class="user-chip" onclick="go('profile')">
+        <img class="avatar sm" src="${DEFAULT_NPC_AVATAR}" alt="">
+        <span class="name">${esc(state.user.nickname || state.user.username)}</span>
+      </div>
+      <button class="icon-btn" onclick="logout()">退出</button>
+    `;
+  }else{
+    userArea = `<button class="btn primary" onclick="openLogin('login')">登录</button>`;
+  }
+  return `
+  <div class="topbar">
+    <div class="topbar-inner">
+      <div class="logo" onclick="go('home')" style="cursor:pointer">
+        <b>捉鬼师论坛</b><span>非官方同人演示</span>
+      </div>
+      <div class="nav">
+        ${navItems.map(([id,label]) => `
+          <a class="${state.view === id ? "on" : ""}" onclick="go('${id}')">${label}</a>
+        `).join("")}
+      </div>
+      <div class="top-actions">
+        <div class="search-mini">
+          <input id="searchInput" placeholder="搜索帖子/标签" value="${esc(state.searchInput)}"
+            oninput="state.searchInput=this.value"
+            onkeydown="if(event.key==='Enter') doSearch()">
+          <button class="btn sm ghost" onclick="doSearch()">搜</button>
+        </div>
+        <button class="icon-btn" onclick="go('notifications')">
+          通知${unread ? `<span class="badge">${unread}</span>` : ""}
+        </button>
+        ${userArea}
+      </div>
+    </div>
+  </div>`;
+}
+
+function renderPostRow(p){
+  const author = person(p.author, p.authorType);
+  const board = boardById(p.board);
+  const replyCount = p.replies.length + ((state.userReplies[p.id] || []).length);
+  const liked = !!state.likes[p.id];
+  return `
+  <div class="post-row" onclick="openPost(${p.id})">
+    ${avatarHTML(author)}
+    <div class="post-main">
+      <div class="post-title">
+        ${p.id === 7 || p.id === 9 ? `<span class="pin">演示</span>` : ""}
+        ${esc(p.title)}
+      </div>
+      <div class="post-meta">
+        <span class="who">${esc(author.name)}</span>
+        <span>${esc(board ? board.name : "")}</span>
+        <span>${esc(p.time)}</span>
+      </div>
+      <div class="tags">
+        ${p.tags.map(t => `<span class="tag-pill ${p.character ? "role" : ""}">#${esc(t)}</span>`).join("")}
+      </div>
+    </div>
+    <div class="post-stats">
+      <span><b>${p.likes + (liked ? 1 : 0)}</b> 赞</span>
+      <span><b>${replyCount}</b> 回复</span>
+      <span>${p.views} 浏览</span>
+    </div>
+  </div>`;
+}
+
+function renderPostList(list){
+  if(!list.length) return `<div class="empty">这里还没有帖子。演示数据里暂时没有匹配内容。</div>`;
+  return `<div class="post-list">${list.map(renderPostRow).join("")}</div>`;
+}
+
+function renderHome(){
+  const hot = [...POSTS].sort((a,b) => (b.likes + b.views/100) - (a.likes + a.views/100)).slice(0,5);
+  const latest = [...POSTS].sort((a,b) => b.id - a.id).slice(0,5);
+  const onlineNpcs = Object.keys(NPCS).slice(0,5);
+  const side = `
+    <div class="side">
+      <div class="card">
+        <div class="section-title"><h3>在线坛友</h3></div>
+        <div class="side-list">
+          ${onlineNpcs.map(k => `<div class="side-item"><span class="online-dot"></span>${esc(NPCS[k].name)}</div>`).join("")}
+          <div class="side-item" style="color:var(--dim);font-size:11px">在线状态为演示模拟</div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="section-title"><h3>热门标签</h3></div>
+        <div class="side-list">
+          <div class="tags" style="padding:4px 0">
+            ${["符纸","朱砂","巡夜","旧城区","笔仙","时间线","大地图","火符","守阵"].map(t =>
+              `<span class="tag-pill" style="cursor:pointer" onclick="searchTag('${esc(t)}')">#${esc(t)}</span>`
+            ).join("")}
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="section-title"><h3>演示说明</h3></div>
+        <div class="card-pad" style="color:var(--dim);font-size:12px;line-height:1.8">
+          本论坛为《捉鬼师后日谈》非官方同人演示页面。角色号为演示 NPC，不代表官方。所有数据保存在本地浏览器。
+        </div>
+      </div>
+    </div>`;
+
+  return `
+  <div class="wrap">
+    <div class="notice">
+      <span class="tag">公告</span>
+      <p><b>捉鬼师论坛</b> · 非官方同人演示论坛。所有角色、NPC、帖子、回复均围绕捉鬼相关话题。角色号为演示 NPC，不伪造官方公告。演示数据保存在本地，清缓存会丢。</p>
+    </div>
+    <div class="layout">
+      <div>
+        <div class="card" style="margin-bottom:16px">
+          <div class="section-title"><h3>热门帖</h3><span class="more" onclick="go('boards')">全部板块</span></div>
+          ${renderPostList(hot)}
+        </div>
+        <div class="card" style="margin-bottom:16px">
+          <div class="section-title"><h3>最新回复</h3></div>
+          ${renderPostList(latest)}
+        </div>
+        <div class="card" style="margin-bottom:16px">
+          <div class="section-title"><h3>角色专区</h3></div>
+          <div class="card-pad grid-cards">
+            ${Object.keys(CHARACTERS).map(k => {
+              const c = CHARACTERS[k];
+              return `<div class="char-card" onclick="openCharacter('${k}')">
+                ${avatarHTML(person(k,"character"))}
+                <div><div class="name">${esc(c.name)}</div><div class="role">${esc(c.title)}</div></div>
+              </div>`;
+            }).join("")}
+          </div>
+        </div>
+        <div class="card">
+          <div class="section-title"><h3>板块</h3></div>
+          <div class="card-pad grid-cards">
+            ${BOARDS.map(b => `<div class="board-card" onclick="openBoard('${b.id}')">
+              <b>${esc(b.name)}</b><small>${esc(b.desc)}</small>
+            </div>`).join("")}
+          </div>
+        </div>
+      </div>
+      ${side}
+    </div>
+  </div>`;
+}
+
+function renderBoards(){
+  return `
+  <div class="wrap">
+    <div class="breadcrumb"><span onclick="go('home')">首页</span> / 板块</div>
+    <div class="card">
+      <div class="section-title"><h3>全部板块</h3></div>
+      <div class="card-pad grid-cards">
+        ${BOARDS.map(b => {
+          const count = POSTS.filter(p => p.board === b.id).length;
+          return `<div class="board-card" onclick="openBoard('${b.id}')">
+            <b>${esc(b.name)}</b><small>${esc(b.desc)}</small>
+            <small style="margin-top:8px;color:var(--dim)">${count} 帖</small>
+          </div>`;
+        }).join("")}
+      </div>
+    </div>
+  </div>`;
+}
+
+function renderBoardPage(boardId){
+  const board = boardById(boardId);
+  const list = POSTS.filter(p => p.board === boardId);
+  return `
+  <div class="wrap">
+    <div class="breadcrumb"><span onclick="go('home')">首页</span> / <span onclick="go('boards')">板块</span> / ${esc(board ? board.name : "")}</div>
+    <div class="card">
+      <div class="section-title">
+        <h3>${esc(board ? board.name : "板块")}</h3>
+        <span class="more">${esc(board ? board.desc : "")}</span>
+      </div>
+      ${renderPostList(list)}
+    </div>
+  </div>`;
+}
+
+function renderFloorReply(p, r, floor){
+  const author = person(r.author, r.authorType);
+  const key = p.id + "-" + floor;
+  const collapsed = r.collapsed && !state.collapsed[key];
+
+  if(collapsed){
+    return `
+    <div class="floor">
+      <div class="side-user">
+        ${avatarHTML(author, "avatar sm")}
+        <div class="name">${esc(author.name)}</div>
+      </div>
+      <div class="content">
+        <div class="topline"><span>${floor} 楼</span><span>该回复含攻击性用语</span></div>
+        <div class="collapsed-reply">
+          演示违规言论，已默认折叠。
+          <button class="btn sm" onclick="toggleCollapse('${key}')">点击展开</button>
+        </div>
+      </div>
+    </div>`;
+  }
+
+  return `
+  <div class="floor">
+    <div class="side-user">
+      ${avatarHTML(author, "avatar sm")}
+      <div class="name">${esc(author.name)}</div>
+      <div class="role-tag">${author.type === "character" ? "演示角色号" : "普通坛友"}</div>
+    </div>
+    <div class="content">
+      <div class="topline">
+        <span>${floor} 楼</span>
+        <span>${esc(p.time)}</span>
+      </div>
+      ${r.violation ? `<span class="violation-tag">演示违规言论</span>` : ""}
+      ${r.content ? `<div class="text">${esc(r.content)}</div>` : ""}
+      ${r.image ? postImageHTML(r.image) : ""}
+      <div class="floor-actions">
+        <span>赞 ${r.likes || 0}</span>
+        <button onclick="alert('演示论坛：回复点赞暂未开放')">回复</button>
+        ${r.violation ? `<button onclick="alert('演示：已模拟举报，等待版主处理')">举报</button>` : ""}
+        ${r.collapsed && state.collapsed[key] ? `<button onclick="toggleCollapse('${key}')">收起</button>` : ""}
+      </div>
+    </div>
+  </div>`;
+}
+
+function renderPostPage(id){
+  const p = postById(id);
+  if(!p) return `<div class="wrap"><div class="card empty">帖子不存在。</div></div>`;
+  const author = person(p.author, p.authorType);
+  const liked = !!state.likes[p.id];
+  const faved = !!state.favs[p.id];
+  const extraReplies = state.userReplies[p.id] || [];
+  const board = boardById(p.board);
+
+  const replyInput = isLoggedIn()
+    ? `<div class="reply-box">
+        <textarea placeholder="回复这个话题（演示：内容保存在本地）" oninput="state.replyDraft=this.value">${esc(state.replyDraft)}</textarea>
+        <div class="row">
+          <span class="hint">演示论坛，请勿发布真实个人信息。</span>
+          <button class="btn primary" onclick="submitReply(${p.id})">发布回复</button>
+        </div>
+      </div>`
+    : `<div class="reply-box">
+        <div class="collapsed-reply" style="display:flex;justify-content:space-between;align-items:center;gap:10px">
+          <span>登录后才能回复。</span>
+          <button class="btn primary sm" onclick="openLogin('login')">去登录</button>
+        </div>
+      </div>`;
+
+  return `
+  <div class="wrap">
+    <div class="breadcrumb">
+      <span onclick="go('home')">首页</span> /
+      <span onclick="openBoard('${p.board}')">${esc(board ? board.name : "")}</span> /
+      帖子
+    </div>
+    <div class="card">
+      <div class="post-head">
+        <h1>${esc(p.title)}</h1>
+        <div class="tags">
+          ${p.tags.map(t => `<span class="tag-pill ${p.character ? "role" : ""}">#${esc(t)}</span>`).join("")}
+        </div>
+        <div class="floor-actions" style="margin-top:12px">
+          <button class="${liked ? "liked" : ""}" onclick="toggleLike(${p.id})">${liked ? "已赞" : "赞"} ${p.likes + (liked ? 1 : 0)}</button>
+          <button class="${faved ? "liked" : ""}" onclick="toggleFav(${p.id})">${faved ? "已收藏" : "收藏"}</button>
+          <span>${p.views} 浏览</span>
+          <span>${p.time}</span>
+        </div>
+      </div>
+
+      <div class="floor">
+        <div class="side-user">
+          ${avatarHTML(author)}
+          <div class="name">${esc(author.name)}</div>
+          <div class="role-tag">${author.type === "character" ? "演示角色号" : "普通坛友"}</div>
+        </div>
+        <div class="content">
+          <div class="topline"><span>1 楼 · 楼主</span><span>${esc(p.time)}</span></div>
+          <div class="text">${esc(p.content)}</div>
+          ${p.image ? postImageHTML(p.image) : ""}
+        </div>
+      </div>
+
+      ${p.replies.map((r,i) => renderFloorReply(p, r, i + 2)).join("")}
+
+      ${extraReplies.map((r,i) => renderFloorReply(p, r, p.replies.length + i + 2)).join("")}
+
+      ${replyInput}
+    </div>
+  </div>`;
+}
+
+function renderCharactersPage(){
+  return `
+  <div class="wrap">
+    <div class="breadcrumb"><span onclick="go('home')">首页</span> / 角色专区</div>
+    <div class="card">
+      <div class="section-title"><h3>八位角色 · 捉鬼相关讨论</h3></div>
+      <div class="card-pad grid-cards">
+        ${Object.keys(CHARACTERS).map(k => {
+          const c = CHARACTERS[k];
+          const count = POSTS.filter(p => p.character === k).length;
+          return `<div class="char-card" onclick="openCharacter('${k}')">
+            ${avatarHTML(person(k,"character"))}
+            <div>
+              <div class="name">${esc(c.name)}</div>
+              <div class="role">${esc(c.title)} · ${count} 帖</div>
+            </div>
+          </div>`;
+        }).join("")}
+      </div>
+    </div>
+  </div>`;
+}
+
+function renderCharacterPage(key){
+  const c = CHARACTERS[key];
+  if(!c) return `<div class="wrap"><div class="card empty">角色不存在。</div></div>`;
+  const list = POSTS.filter(p => p.character === key);
+  return `
+  <div class="wrap">
+    <div class="breadcrumb"><span onclick="go('home')">首页</span> / <span onclick="go('characters')">角色专区</span> / ${esc(c.name)}</div>
+    <div class="card" style="margin-bottom:16px">
+      <div class="profile-head">
+        ${avatarHTML(person(key,"character"), "avatar")}
+        <div>
+          <div style="font-size:16px;color:var(--white);font-weight:600">${esc(c.name)}</div>
+          <div style="color:var(--dim);font-size:12px;margin-top:2px">${esc(c.title)} · 演示角色号</div>
+          <div class="stat-row"><span><b>${list.length}</b> 相关帖</span><span>角色内容均为捉鬼相关</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="section-title"><h3>${esc(c.name)} · 相关帖</h3></div>
+      ${renderPostList(list)}
+    </div>
+  </div>`;
+}
+
+function renderSearchPage(){
+  const kw = state.searchKeyword.trim();
+  let list = POSTS;
+  if(kw){
+    const low = kw.toLowerCase();
+    list = POSTS.filter(p =>
+      p.title.toLowerCase().includes(low) ||
+      p.content.toLowerCase().includes(low) ||
+      p.tags.some(t => t.toLowerCase().includes(low)) ||
+      person(p.author, p.authorType).name.toLowerCase().includes(low)
+    );
+  }
+  return `
+  <div class="wrap">
+    <div class="breadcrumb"><span onclick="go('home')">首页</span> / 搜索</div>
+    <div class="card">
+      <div class="section-title"><h3>${kw ? "搜索：" + esc(kw) : "全部帖子"}</h3><span class="more">${list.length} 条结果</span></div>
+      ${renderPostList(list)}
+    </div>
+  </div>`;
+}
+
+function renderNotificationsPage(){
+  return `
+  <div class="wrap">
+    <div class="breadcrumb"><span onclick="go('home')">首页</span> / 通知</div>
+    <div class="card">
+      <div class="section-title">
+        <h3>通知</h3>
+        <span class="more" onclick="markAllRead()" style="cursor:pointer">全部标为已读</span>
+      </div>
+      ${state.notifications.length ? state.notifications.map(n => `
+        <div class="notif-item ${n.read ? "" : "unread"}">
+          <div class="dot" style="${n.read ? "background:transparent" : ""}"></div>
+          <div>
+            <div class="txt">${esc(n.text)}</div>
+            <div class="tm">${esc(n.time)}</div>
+          </div>
+        </div>
+      `).join("") : `<div class="empty">暂无通知。</div>`}
+    </div>
+  </div>`;
+}
+
+function renderProfilePage(){
+  if(!isLoggedIn()){
+    return `<div class="wrap"><div class="card empty">尚未登录。<button class="btn primary sm" style="margin-left:8px" onclick="openLogin('login')">去登录</button></div></div>`;
+  }
+  const myReplies = [];
+  Object.keys(state.userReplies).forEach(pid => {
+    const p = postById(pid);
+    (state.userReplies[pid] || []).forEach(r => {
+      myReplies.push({ post:p, reply:r });
+    });
+  });
+  const likedPosts = POSTS.filter(p => state.likes[p.id]);
+  const favPosts = POSTS.filter(p => state.favs[p.id]);
+  return `
+  <div class="wrap">
+    <div class="breadcrumb"><span onclick="go('home')">首页</span> / 个人中心</div>
+    <div class="card" style="margin-bottom:16px">
+      <div class="profile-head">
+        <img class="avatar" src="${DEFAULT_NPC_AVATAR}" alt="">
+        <div>
+          <div style="font-size:16px;color:var(--white);font-weight:600">${esc(state.user.nickname || state.user.username)}</div>
+          <div style="color:var(--dim);font-size:12px;margin-top:2px">演示账号 · 本地登录</div>
+          <div class="stat-row">
+            <span><b>${myReplies.length}</b> 我的回复</span>
+            <span><b>${likedPosts.length}</b> 点赞</span>
+            <span><b>${favPosts.length}</b> 收藏</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-bottom:16px">
+      <div class="section-title"><h3>我的回复</h3></div>
+      ${myReplies.length ? myReplies.map(x => `
+        <div class="post-row" onclick="openPost(${x.post.id})">
+          <div class="post-main">
+            <div class="post-title">${esc(x.post.title)}</div>
+            <div class="post-meta"><span>${esc(x.reply.content.slice(0,60))}${x.reply.content.length > 60 ? "…" : ""}</span></div>
+          </div>
+        </div>
+      `).join("") : `<div class="empty">还没有回复。</div>`}
+    </div>
+
+    <div class="card" style="margin-bottom:16px">
+      <div class="section-title"><h3>我点赞的帖子</h3></div>
+      ${likedPosts.length ? renderPostList(likedPosts) : `<div class="empty">还没有点赞。</div>`}
+    </div>
+
+    <div class="card">
+      <div class="section-title"><h3>我收藏的帖子</h3></div>
+      ${favPosts.length ? renderPostList(favPosts) : `<div class="empty">还没有收藏。</div>`}
+    </div>
+  </div>`;
+}
+
+function renderLoginModal(){
+  if(!state.showLogin) return "";
+  const isLogin = state.loginMode === "login";
+  return `
+  <div class="modal-mask" onclick="if(event.target===this) closeLogin()">
+    <div class="modal">
+      <h2>${isLogin ? "登录捉鬼师论坛" : "注册演示账号"}</h2>
+      <p class="sub">${isLogin ? "模拟登录，仅保存在本地浏览器。" : "演示用途，请勿使用真实密码。"}</p>
+      <div class="field">
+        <label>用户名</label>
+        <input id="loginUser" placeholder="demo" autocomplete="off">
+      </div>
+      ${isLogin ? "" : `
+      <div class="field">
+        <label>昵称</label>
+        <input id="loginNick" placeholder="夜班捉鬼人" autocomplete="off">
+      </div>`}
+      <div class="field">
+        <label>密码</label>
+        <input id="loginPass" type="password" placeholder="123456" autocomplete="off">
+      </div>
+      <div class="form-error">${esc(state.loginError)}</div>
+      <div class="row">
+        <button class="btn primary" onclick="${isLogin ? "doLogin()" : "doRegister()"}">${isLogin ? "登录" : "注册并登录"}</button>
+        <button class="btn" onclick="closeLogin()">取消</button>
+      </div>
+      ${isLogin ? `
+      <div class="demo-tip">
+        演示账号：<b>demo</b> / <b>123456</b><br>
+        也可以注册一个本地账号。密码明文保存在 localStorage，仅作演示。
+      </div>` : ""}
+      <div class="swap">
+        ${isLogin ? `还没有账号？<button onclick="openLogin('register')">注册</button>` : `已有账号？<button onclick="openLogin('login')">登录</button>`}
+      </div>
+    </div>
+  </div>`;
+}
+
+function render(){
+  let page = "";
+  switch(state.view){
+    case "home": page = renderHome(); break;
+    case "boards": page = renderBoards(); break;
+    case "board": page = renderBoardPage(state.param); break;
+    case "post": page = renderPostPage(state.param); break;
+    case "characters": page = renderCharactersPage(); break;
+    case "character": page = renderCharacterPage(state.param); break;
+    case "search": page = renderSearchPage(); break;
+    case "notifications": page = renderNotificationsPage(); break;
+    case "profile": page = renderProfilePage(); break;
+    case "events": page = renderBoardPage("events"); break;
+    case "practice": page = renderBoardPage("practice"); break;
+    case "notes": page = renderBoardPage("notes"); break;
+    case "lounge": page = renderBoardPage("lounge"); break;
+    default: page = renderHome();
+  }
+  document.getElementById("app").innerHTML = renderTopbar() + page + renderLoginModal();
+  renderFooter();
+}
+
+function renderFooter(){
+  document.getElementById("footer").innerHTML = `
+    <b>捉鬼师论坛</b> · 非官方同人演示论坛<br>
+    本页面为《捉鬼师后日谈》同人观赏演示，角色号为演示 NPC，不代表官方，不伪造官方公告。<br>
+    角色头像与帖子图片由使用者自行提供，请确认素材使用权。普通 NPC 使用统一灰阶默认头像。<br>
+    所有登录、点赞、收藏、回复数据仅保存在本地浏览器，清缓存会丢失。
+    <button class="reset" onclick="resetDemo()">重置演示数据</button>
+  `;
+}
+
+function go(view, param){
+  state.view = view;
+  state.param = param || null;
+  state.showLogin = false;
+  state.loginError = "";
+  state.replyDraft = "";
+  render();
+  window.scrollTo({ top:0, behavior:"smooth" });
+}
+function openPost(id){ go("post", id); }
+function openBoard(id){ go("board", id); }
+function openCharacter(id){ go("character", id); }
+
+function openLogin(mode){
+  state.showLogin = true;
+  state.loginMode = mode || "login";
+  state.loginError = "";
+  render();
+  setTimeout(() => {
+    const el = document.getElementById("loginUser");
+    if(el) el.focus();
+  }, 30);
+}
+function closeLogin(){
+  state.showLogin = false;
+  state.loginError = "";
+  render();
+}
+
+function doLogin(){
+  const u = (document.getElementById("loginUser") || {}).value || "";
+  const p = (document.getElementById("loginPass") || {}).value || "";
+  const username = u.trim();
+  if(!username || !p){ state.loginError = "请输入用户名和密码。"; render(); return; }
+
+  if(username === "demo" && p === "123456"){
+    state.user = { username:"demo", nickname:"夜班捉鬼人" };
+    persistUser();
+    state.showLogin = false;
+    state.loginError = "";
+    pushNotif("欢迎回来，夜班捉鬼人。演示论坛数据保存在本地。");
+    render();
+    return;
+  }
+
+  const accounts = loadJSON(LS.accounts, {});
+  const acc = accounts[username];
+  if(!acc || acc.password !== p){
+    state.loginError = "用户名或密码不正确。演示账号：demo / 123456";
+    render();
+    return;
+  }
+  state.user = { username, nickname: acc.nickname || username };
+  persistUser();
+  state.showLogin = false;
+  state.loginError = "";
+  pushNotif("欢迎回来，" + (acc.nickname || username) + "。");
+  render();
+}
+
+function doRegister(){
+  const u = (document.getElementById("loginUser") || {}).value || "";
+  const n = (document.getElementById("loginNick") || {}).value || "";
+  const p = (document.getElementById("loginPass") || {}).value || "";
+  const username = u.trim();
+  const nickname = n.trim() || username;
+  if(!username || !p){ state.loginError = "用户名和密码不能为空。"; render(); return; }
+  if(username === "demo"){ state.loginError = "demo 是演示账号，请换一个用户名。"; render(); return; }
+  if(p.length < 4){ state.loginError = "演示密码至少 4 位。"; render(); return; }
+
+  const accounts = loadJSON(LS.accounts, {});
+  if(accounts[username]){ state.loginError = "该用户名已存在。"; render(); return; }
+  accounts[username] = { password:p, nickname };
+  saveJSON(LS.accounts, accounts);
+
+  state.user = { username, nickname };
+  persistUser();
+  state.showLogin = false;
+  state.loginError = "";
+  pushNotif("账号已创建，欢迎来到捉鬼师论坛。");
+  render();
+}
+
+function logout(){
+  state.user = null;
+  persistUser();
+  go("home");
+}
+
+function toggleLike(id){
+  if(!isLoggedIn()){ openLogin("login"); return; }
+  if(state.likes[id]) delete state.likes[id];
+  else state.likes[id] = true;
+  persistLikes();
+  render();
+}
+
+function toggleFav(id){
+  if(!isLoggedIn()){ openLogin("login"); return; }
+  if(state.favs[id]) delete state.favs[id];
+  else state.favs[id] = true;
+  persistFavs();
+  render();
+}
+
+function toggleCollapse(key){
+  state.collapsed[key] = !state.collapsed[key];
+  render();
+}
+
+function submitReply(postId){
+  if(!isLoggedIn()){ openLogin("login"); return; }
+  const text = (state.replyDraft || "").trim();
+  if(!text){ alert("回复内容不能为空。"); return; }
+  if(!state.userReplies[postId]) state.userReplies[postId] = [];
+  state.userReplies[postId].push({
+    author: "user",
+    authorType: "user",
+    content: text,
+    likes: 0,
+    isUser: true
+  });
+  persistReplies();
+  state.replyDraft = "";
+  pushNotif("你的回复已发布（演示，仅保存在本地）。");
+  render();
+  setTimeout(() => {
+    const el = document.querySelector(".reply-box textarea");
+    if(el) el.value = "";
+  }, 10);
+}
+
+function pushNotif(text){
+  state.notifications.unshift({
+    id: Date.now(),
+    text,
+    time: "刚刚",
+    read: false
+  });
+  persistNotifs();
+}
+
+function markAllRead(){
+  state.notifications = state.notifications.map(n => ({ ...n, read:true }));
+  persistNotifs();
+  render();
+}
+
+function doSearch(){
+  state.searchKeyword = state.searchInput;
+  go("search");
+}
+function searchTag(tag){
+  state.searchInput = tag;
+  state.searchKeyword = tag;
+  go("search");
+}
+
+function resetDemo(){
+  if(!confirm("确定重置演示数据？会清除本地登录、点赞、收藏、回复和通知。")) return;
+  [LS.user, LS.accounts, LS.likes, LS.favs, LS.replies, LS.notifs].forEach(k => localStorage.removeItem(k));
+  state.user = null;
+  state.likes = {};
+  state.favs = {};
+  state.userReplies = {};
+  state.collapsed = {};
+  state.notifications = [
+    { id:1, text:"夜巡小队长 回复了你的帖子《新人报到：第一次巡夜需要准备什么？》", time:"10 分钟前", read:false },
+    { id:2, text:"符纸收藏家 赞了你的回复", time:"1 小时前", read:false }
+  ];
+  saveJSON(LS.notifs, state.notifications);
+  go("home");
+}
+
+render();
+</script>
+</body>
+</html>
