@@ -1,1 +1,691 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>捉鬼师论坛 · 非官方同人演示论坛</title>
+<style>
+  :root{
+    --bg:#0c0c0e; --bg2:#111114; --card:#17171b; --card2:#1d1d22;
+    --line:#2b2b31; --line2:#3a3a42; --text:#e9e9ee; --muted:#9a9aa4;
+    --dim:#6d6d76; --white:#fff; --accent:#d7d7e0;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    background:
+      radial-gradient(1200px 600px at 70% -10%, #1a1a1f 0%, transparent 60%),
+      radial-gradient(900px 500px at 10% 0%, #151519 0%, transparent 55%),
+      var(--bg);
+    color:var(--text);
+    font-family:system-ui,-apple-system,"Segoe UI","Microsoft YaHei",sans-serif;
+    font-size:14px; line-height:1.6;
+    min-height:100vh;
+  }
+  a{color:inherit;text-decoration:none}
+  button{font-family:inherit;cursor:pointer}
+  img{max-width:100%}
 
+  .topbar{
+    position:sticky; top:0; z-index:50;
+    background:rgba(12,12,14,.86);
+    backdrop-filter:blur(10px);
+    border-bottom:1px solid var(--line);
+  }
+  .topbar-inner{
+    max-width:1160px; margin:0 auto; padding:0 18px;
+    height:58px; display:flex; align-items:center; gap:18px;
+  }
+  .logo{display:flex; align-items:baseline; gap:9px; white-space:nowrap}
+  .logo b{font-size:18px; letter-spacing:2px; color:var(--white); font-weight:700}
+  .logo span{font-size:10px; color:var(--dim); letter-spacing:1px}
+  .nav{display:flex; gap:2px; flex:1; overflow-x:auto}
+  .nav a{
+    padding:7px 11px; border-radius:7px; color:var(--muted);
+    font-size:13px; white-space:nowrap; border:1px solid transparent;
+  }
+  .nav a:hover{color:var(--white); background:var(--card)}
+  .nav a.on{color:var(--white); background:var(--card2); border-color:var(--line)}
+  .top-actions{display:flex; align-items:center; gap:8px}
+  .search-mini{
+    display:flex; align-items:center; gap:6px;
+    background:var(--card); border:1px solid var(--line);
+    border-radius:8px; padding:5px 9px;
+  }
+  .search-mini input{
+    background:transparent; border:0; outline:0; color:var(--text);
+    width:120px; font-size:12px;
+  }
+  .icon-btn{
+    background:var(--card); border:1px solid var(--line); color:var(--muted);
+    border-radius:8px; padding:7px 10px; font-size:12px; position:relative;
+  }
+  .icon-btn:hover{color:var(--white); border-color:var(--line2)}
+  .badge{
+    position:absolute; top:-5px; right:-5px; background:var(--white); color:#111;
+    border-radius:99px; font-size:10px; padding:0 5px; font-weight:700;
+  }
+  .btn{
+    background:var(--card); border:1px solid var(--line); color:var(--text);
+    border-radius:8px; padding:7px 13px; font-size:13px;
+  }
+  .btn:hover{background:var(--card2); border-color:var(--line2)}
+  .btn.primary{background:var(--white); color:#111; border-color:var(--white); font-weight:600}
+  .btn.primary:hover{background:#e6e6ea}
+  .btn.ghost{background:transparent}
+  .btn.sm{padding:4px 9px; font-size:12px; border-radius:7px}
+
+  .wrap{max-width:1160px; margin:0 auto; padding:20px 18px 60px}
+  .layout{display:grid; grid-template-columns:1fr 290px; gap:18px; align-items:start}
+  @media(max-width:900px){ .layout{grid-template-columns:1fr} .side{display:none} }
+  .card{background:var(--card); border:1px solid var(--line); border-radius:12px}
+  .card-pad{padding:16px}
+  .section-title{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:14px 16px; border-bottom:1px solid var(--line);
+  }
+  .section-title h3{margin:0; font-size:14px; letter-spacing:1px; color:var(--accent)}
+  .section-title .more{font-size:12px; color:var(--dim)}
+  .section-title .more:hover{color:var(--white)}
+
+  .notice{
+    display:flex; gap:10px; align-items:flex-start;
+    background:linear-gradient(180deg,#1a1a1f,#151518);
+    border:1px solid var(--line); border-radius:12px; padding:12px 14px; margin-bottom:16px;
+  }
+  .notice .tag{
+    flex:none; font-size:11px; border:1px solid var(--line2); color:var(--accent);
+    border-radius:5px; padding:1px 6px; margin-top:2px;
+  }
+  .notice p{margin:0; color:var(--muted); font-size:12.5px}
+  .notice b{color:var(--text)}
+
+  .post-list{display:flex; flex-direction:column}
+  .post-row{
+    display:flex; gap:12px; padding:14px 16px; border-bottom:1px solid var(--line);
+    cursor:pointer; transition:background .15s;
+  }
+  .post-row:last-child{border-bottom:0}
+  .post-row:hover{background:var(--card2)}
+  .avatar{
+    width:40px; height:40px; border-radius:10px; object-fit:cover; flex:none;
+    background:#232328; border:1px solid var(--line2);
+  }
+  .avatar.sm{width:32px; height:32px; border-radius:9px}
+  .post-main{min-width:0; flex:1}
+  .post-title{
+    display:flex; align-items:center; gap:7px; flex-wrap:wrap;
+    font-size:14.5px; color:var(--text); font-weight:600;
+  }
+  .post-title .pin{font-size:10px; color:#111; background:var(--accent); border-radius:4px; padding:0 5px; font-weight:700}
+  .post-meta{
+    display:flex; gap:10px; flex-wrap:wrap; color:var(--dim);
+    font-size:11.5px; margin-top:5px;
+  }
+  .post-meta .who{color:var(--muted)}
+  .tags{display:flex; gap:6px; flex-wrap:wrap; margin-top:7px}
+  .tag-pill{
+    font-size:11px; color:var(--muted); border:1px solid var(--line);
+    border-radius:99px; padding:1px 8px; background:var(--bg2);
+  }
+  .tag-pill.role{color:var(--accent); border-color:var(--line2)}
+  .post-stats{
+    flex:none; display:flex; flex-direction:column; align-items:flex-end;
+    gap:6px; color:var(--dim); font-size:11.5px; min-width:64px;
+  }
+  .post-stats b{color:var(--muted); font-weight:600}
+
+  .grid-cards{display:grid; grid-template-columns:repeat(auto-fill,minmax(160px,1fr)); gap:12px}
+  .board-card{
+    background:var(--card); border:1px solid var(--line); border-radius:11px;
+    padding:13px; cursor:pointer; transition:.15s;
+  }
+  .board-card:hover{border-color:var(--line2); background:var(--card2); transform:translateY(-1px)}
+  .board-card b{display:block; color:var(--text); font-size:13.5px}
+  .board-card small{color:var(--dim); font-size:11.5px; display:block; margin-top:4px}
+  .char-card{
+    display:flex; align-items:center; gap:10px; background:var(--card);
+    border:1px solid var(--line); border-radius:11px; padding:11px; cursor:pointer;
+  }
+  .char-card:hover{border-color:var(--line2); background:var(--card2)}
+  .char-card .name{font-size:13px; color:var(--text); font-weight:600}
+  .char-card .role{font-size:11px; color:var(--dim)}
+
+  .post-head{padding:18px 18px 14px; border-bottom:1px solid var(--line)}
+  .post-head h1{margin:0 0 10px; font-size:20px; line-height:1.4; color:var(--white)}
+  .floor{
+    display:flex; gap:12px; padding:16px 18px; border-bottom:1px solid var(--line);
+  }
+  .floor:last-child{border-bottom:0}
+  .floor .side-user{width:92px; flex:none; text-align:center}
+  .floor .side-user .name{font-size:12.5px; color:var(--text); margin-top:6px; word-break:break-all}
+  .floor .side-user .role-tag{font-size:10px; color:var(--dim); margin-top:2px}
+  .floor .content{flex:1; min-width:0}
+  .floor .content .topline{
+    display:flex; justify-content:space-between; gap:8px; color:var(--dim);
+    font-size:11px; margin-bottom:8px;
+  }
+  .floor .content .text{white-space:pre-wrap; color:var(--text); font-size:14px}
+  .floor .content .text p{margin:0 0 8px}
+  .floor-actions{display:flex; gap:12px; margin-top:10px; color:var(--dim); font-size:11.5px}
+  .floor-actions button{background:none; border:0; color:var(--dim); padding:0; font-size:11.5px}
+  .floor-actions button:hover{color:var(--white)}
+  .floor-actions .liked{color:var(--white)}
+
+  .post-image{
+    margin:10px 0 0; border:1px solid var(--line); border-radius:10px;
+    overflow:hidden; background:#141417; position:relative; min-height:80px;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .post-image img{display:block; width:100%; height:auto}
+  .post-image .img-note{display:none; color:var(--dim); font-size:12px; padding:28px 10px}
+  .post-image.missing .img-note{display:block}
+  .post-image.missing img{display:none}
+
+  .collapsed-reply{
+    border:1px dashed var(--line2); border-radius:9px; padding:11px 13px;
+    color:var(--dim); font-size:12.5px; background:var(--bg2);
+  }
+  .collapsed-reply button{margin-left:8px}
+  .violation-tag{
+    display:inline-block; font-size:10px; color:var(--muted);
+    border:1px solid var(--line2); border-radius:4px; padding:0 5px; margin-right:6px;
+  }
+
+  .reply-box{padding:16px 18px}
+  .reply-box textarea{
+    width:100%; min-height:90px; resize:vertical; background:var(--bg2);
+    border:1px solid var(--line); border-radius:9px; color:var(--text);
+    padding:10px 12px; outline:0; font-family:inherit; font-size:13.5px;
+  }
+  .reply-box textarea:focus{border-color:var(--line2)}
+  .reply-box .row{display:flex; justify-content:space-between; align-items:center; margin-top:10px; gap:10px}
+  .hint{color:var(--dim); font-size:11.5px}
+
+  .side .card{margin-bottom:14px}
+  .side-list{padding:6px 16px 12px}
+  .side-item{padding:9px 0; border-bottom:1px solid var(--line); font-size:12.5px}
+  .side-item:last-child{border-bottom:0}
+  .side-item .t{color:var(--text); display:block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+  .side-item .m{color:var(--dim); font-size:11px; margin-top:2px}
+  .online-dot{display:inline-block; width:6px; height:6px; border-radius:50%; background:var(--accent); margin-right:6px; vertical-align:middle}
+
+  .modal-mask{
+    position:fixed; inset:0; background:rgba(0,0,0,.66); z-index:100;
+    display:flex; align-items:center; justify-content:center; padding:18px;
+  }
+  .modal{
+    width:100%; max-width:390px; background:var(--card); border:1px solid var(--line2);
+    border-radius:14px; padding:20px;
+  }
+  .modal h2{margin:0 0 4px; font-size:17px; color:var(--white)}
+  .modal p.sub{margin:0 0 16px; color:var(--dim); font-size:12px}
+  .field{margin-bottom:11px}
+  .field label{display:block; font-size:11.5px; color:var(--muted); margin-bottom:4px}
+  .field input{
+    width:100%; background:var(--bg2); border:1px solid var(--line);
+    border-radius:8px; padding:9px 11px; color:var(--text); outline:0; font-size:13px;
+  }
+  .field input:focus{border-color:var(--line2)}
+  .modal .row{display:flex; gap:8px; margin-top:14px}
+  .modal .row .btn{flex:1}
+  .modal .swap{text-align:center; margin-top:12px; font-size:12px; color:var(--dim)}
+  .modal .swap button{background:none; border:0; color:var(--accent); font-size:12px; padding:0}
+  .form-error{color:#d9a0a0; font-size:11.5px; margin-top:8px; min-height:16px}
+  .demo-tip{
+    margin-top:12px; padding:9px 11px; border:1px dashed var(--line2);
+    border-radius:8px; color:var(--dim); font-size:11.5px; line-height:1.7;
+  }
+
+  .user-chip{display:flex; align-items:center; gap:8px; cursor:pointer}
+  .user-chip .name{font-size:12.5px; color:var(--text); max-width:90px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+
+  .empty{padding:34px 18px; text-align:center; color:var(--dim); font-size:13px}
+
+  .footer{
+    max-width:1160px; margin:0 auto; padding:26px 18px 40px;
+    border-top:1px solid var(--line); color:var(--dim); font-size:11.5px; line-height:1.9;
+  }
+  .footer b{color:var(--muted)}
+  .footer .reset{color:var(--dim); text-decoration:underline; background:none; border:0; font-size:11.5px; padding:0}
+
+  .notif-item{display:flex; gap:10px; padding:13px 16px; border-bottom:1px solid var(--line)}
+  .notif-item:last-child{border-bottom:0}
+  .notif-item.unread{background:var(--card2)}
+  .notif-item .dot{width:7px; height:7px; border-radius:50%; background:var(--accent); margin-top:8px; flex:none}
+  .notif-item .txt{font-size:12.5px; color:var(--text)}
+  .notif-item .tm{font-size:11px; color:var(--dim); margin-top:3px}
+
+  .profile-head{display:flex; gap:14px; align-items:center; padding:18px}
+  .profile-head .avatar{width:56px; height:56px; border-radius:14px}
+  .stat-row{display:flex; gap:18px; margin-top:6px; color:var(--dim); font-size:12px}
+  .stat-row b{color:var(--text)}
+
+  .tabs{display:flex; gap:6px; padding:12px 16px; border-bottom:1px solid var(--line); flex-wrap:wrap}
+  .tabs button{
+    background:var(--bg2); border:1px solid var(--line); color:var(--muted);
+    border-radius:99px; padding:5px 12px; font-size:12px;
+  }
+  .tabs button.on{background:var(--white); color:#111; border-color:var(--white); font-weight:600}
+
+  .breadcrumb{color:var(--dim); font-size:12px; margin-bottom:12px}
+  .breadcrumb span{cursor:pointer}
+  .breadcrumb span:hover{color:var(--white)}
+
+  @media(max-width:600px){
+    .topbar-inner{height:auto; padding:10px 12px; flex-wrap:wrap; gap:10px}
+    .nav{order:3; width:100%; flex:1 1 100%}
+    .search-mini input{width:80px}
+    .post-stats{display:none}
+    .floor .side-user{width:64px}
+    .floor .side-user .avatar{width:36px; height:36px}
+  }
+</style>
+</head>
+<body>
+<div id="app"></div>
+<div class="footer" id="footer"></div>
+
+<script>
+const DEFAULT_NPC_AVATAR = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(
+  `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80">
+    <rect width="80" height="80" fill="#232328"/>
+    <circle cx="40" cy="30" r="13" fill="#6d6d76"/>
+    <path d="M15 73c2-17 13-25 25-25s23 8 25 25" fill="#6d6d76"/>
+  </svg>`
+);
+
+const CHARACTERS = {
+  luo:  { name:"双面鬼", avatar:"assets/avatars/characters/luo-yunying-avatar.png", title:"嘴毒心软" },
+  qin:  { name:"秦大侠", avatar:"assets/avatars/characters/qin-wu-avatar.png",       title:"温柔耐心" },
+  hu:   { name:"琥珀",   avatar:"assets/avatars/characters/hu-po-avatar.png",        title:"符纸保养" },
+  tong: { name:"佟装水", avatar:"assets/avatars/characters/tong-xiao-yu-avatar.png", title:"新人画符" },
+  qing: { name:"青龙",   avatar:"assets/avatars/characters/qing-long-avatar.png",    title:"巡街路线" },
+  bai:  { name:"白虎",   avatar:"assets/avatars/characters/bai-hu-avatar.png",       title:"直球" },
+  zhu:  { name:"朱雀",   avatar:"assets/avatars/characters/zhu-que-avatar.png",      title:"火符" },
+  xuan: { name:"玄武",   avatar:"assets/avatars/characters/xuan-wu-avatar.png",      title:"守阵" }
+};
+
+const NPCS = {
+  fu:    { name:"符纸收藏家" },
+  hong:  { name:"红线不缠我" },
+  bi:    { name:"笔仙退散" },
+  ye:    { name:"夜巡小队长" },
+  du:    { name:"秦大侠的读档记录" },
+  luoFan:{ name:"双面鬼毒舌翻译机" },
+  map:   { name:"大地图迷路中" },
+  fish:  { name:"水区摸鱼怪" }
+};
+
+const BOARDS = [
+  { id:"general",  name:"捉鬼杂谈",     desc:"新人求助 · 经验交流 · 避坑" },
+  { id:"characters",name:"角色专区",    desc:"八位角色相关的捉鬼讨论" },
+  { id:"events",   name:"灵异事件记录", desc:"笔仙复盘 · 巡街记录 · 异常现象" },
+  { id:"practice", name:"捉鬼实务",     desc:"符咒 · 朱砂 · 道具 · 大地图" },
+  { id:"notes",    name:"捉鬼手记",     desc:"符样 · 手记 · 脑洞记录" },
+  { id:"lounge",   name:"捉鬼师摸鱼区", desc:"任务吐槽 · 装备保养 · 巡街闲聊" }
+];
+
+const POSTS = [
+  {
+    id:1, board:"general", title:"新人报到：第一次巡夜需要准备什么？",
+    author:"map", authorType:"npc", tags:["新人","巡夜"], time:"2026-10-18 21:10", likes:16, views:322,
+    content:"刚入行，今晚第一次跟队巡夜。除了符纸和朱砂，还需要带什么？手电算不算违规？在线等。",
+    replies:[
+      { author:"ye", authorType:"npc", content:"手电可以，别用强光直照墙角。带一小包干糯米，湿气重的地方撒一点。", likes:8 },
+      { author:"fu", authorType:"npc", content:"符纸别揣裤兜，折痕会影响贴合。用硬纸板夹着。", likes:5 },
+      { author:"bi", authorType:"npc", content:"记得带水。别问，问就是上次喊到嗓子哑。", likes:3 }
+    ]
+  },
+  {
+    id:2, board:"general", title:"符纸总贴反怎么办，在线等，挺急的",
+    author:"bi", authorType:"npc", tags:["符纸","求助"], time:"2026-10-18 22:40", likes:9, views:188,
+    content:"连续三张，贴上去就掉。我怀疑不是符的问题，是我手的问题。有没有同样手残的。",
+    replies:[
+      { author:"fu", authorType:"npc", content:"先看墙面。返潮的墙贴什么都掉，烘一遍再贴。", likes:6 },
+      { author:"ye", authorType:"npc", content:"也可能是你贴反了。朱砂面朝外，别对着墙。", likes:4 }
+    ]
+  },
+  {
+    id:3, board:"general", title:"旧城区夜巡避坑记录（持续更新）",
+    author:"ye", authorType:"npc", tags:["旧城区","避坑","巡夜"], time:"2026-10-17 23:05", likes:21, views:410,
+    content:"旧城区三巷、五巷、老粮站后墙，这三处湿气最重，符纸基本撑不过半刻。建议白天踩点，晚上结伴。",
+    replies:[
+      { author:"map", authorType:"npc", content:"三巷我上周也去了，确实。墙皮一碰就掉。", likes:3 },
+      { author:"fu", authorType:"npc", content:"那边建议用干性朱砂，普通的不行。", likes:7 },
+      { author:"qin", authorType:"character", content:"谢谢整理。我这边也记一下，旧城区确实要多留一份心。", likes:12 }
+    ]
+  },
+  {
+    id:4, board:"general", title:"朱砂受潮了还能用吗？",
+    author:"fu", authorType:"npc", tags:["朱砂","材料"], time:"2026-10-17 19:20", likes:11, views:240,
+    content:"一盒朱砂放窗边忘了收，结块了。磨碎还能不能用？还是直接换新的。",
+    replies:[
+      { author:"ye", authorType:"npc", content:"结块别硬磨，画出来会断线。应急可以，正经出任务换新的。", likes:5 },
+      { author:"hu", authorType:"character", content:"受潮的朱砂可以摊开阴干，别晒。晒过之后颜色会发暗，效果差一截。", likes:9 }
+    ]
+  },
+  {
+    id:5, board:"general", title:"遇到符纸自燃是先跑还是先灭火？",
+    author:"fish", authorType:"npc", tags:["符纸","应急"], time:"2026-10-16 22:12", likes:14, views:301,
+    content:"昨晚贴的符突然自己烧起来了，我愣了三秒。正确流程到底是什么？",
+    replies:[
+      { author:"ye", authorType:"npc", content:"先退两步，看火势和方向。自燃多半是那边有东西，别急着伸手。", likes:8 },
+      { author:"bi", authorType:"npc", content:"我上次直接一盆水，然后被队长骂了半小时。", likes:4 }
+    ]
+  },
+  {
+    id:6, board:"general", title:"求推荐靠谱的罗盘，别太贵",
+    author:"hong", authorType:"npc", tags:["罗盘","道具"], time:"2026-10-16 18:44", likes:7, views:166,
+    content:"新手用，预算不高。主要想判断方向，不要求多精准。二手能收吗？",
+    replies:[
+      { author:"fu", authorType:"npc", content:"二手先看磁针晃不晃，晃得厉害就别要。", likes:4 },
+      { author:"qing", authorType:"character", content:"新手其实不用急着上罗盘，先把巡街路线记熟。方向感比工具重要。", likes:10 }
+    ]
+  },
+
+  {
+    id:7, board:"characters", character:"luo", title:"鲜血艺术",
+    author:"luo", authorType:"character", tags:["双面鬼","图片帖","演示"], time:"2026-10-19 01:12", likes:33, views:876,
+    image:"assets/posts/luo-yunying-post-blood-art.png",
+    content:"新作品。别问，问就是颜料。",
+    replies:[
+      { author:"bi", authorType:"npc", content:"死娘炮，你照片里拍的是不是XXX大街？老子就在对面吃烧烤，你有本事过来，咱俩比划比划。", collapsed:true, violation:true, likes:2 },
+      { author:"luo", authorType:"character", content:"", image:"assets/posts/luo-yunying-reply-image.png", likes:19 }
+    ]
+  },
+  {
+    id:8, board:"characters", character:"luo", title:"嘴毒归嘴毒，他给的符是真管用",
+    author:"luoFan", authorType:"npc", tags:["双面鬼","符纸"], time:"2026-10-18 20:30", likes:18, views:356,
+    content:"上次旧城区那事，他嘴上骂了我十分钟，最后还是塞了两张符给我。贴上去真就没再掉。",
+    replies:[
+      { author:"bi", authorType:"npc", content:"嘴毒心软，实锤。", likes:6 },
+      { author:"luo", authorType:"character", content:"符是给你应急的，不是让你当护身符天天揣着。用完自己画。", likes:15 }
+    ]
+  },
+  {
+    id:9, board:"characters", character:"qin", title:"【求助】旧城区符纸连续失效，有同修遇到过吗",
+    author:"qin", authorType:"character", tags:["秦大侠","求助","旧城区","符纸"], time:"2026-10-19 00:20", likes:27, views:640,
+    content:"各位同修好，打扰了。\n最近在旧城区巡夜时，遇到一个情况：同一批符纸，在别处都正常，到了旧城区几条巷子就连续失效，贴上后不到半刻就自行脱落。朱砂没有受潮，符纸也是新画的，我反复确认过步骤。\n想请教一下，有没有人遇到过类似情况？是地气问题、湿气问题，还是那一带有什么东西在干扰？\n如果有线索，麻烦告诉我，我会认真记下来。谢谢。",
+    replies:[
+      { author:"luo", authorType:"character", content:"你先别急着往“那一带有什么东西”上想。\n旧城区那几条巷子湿气重，墙皮返潮，符纸贴上去不脱才怪。朱砂换干性的，贴之前把墙面烘一遍，别用你那种一受潮就软的纸。\n还有，失效就失效，别一个人半夜蹲那儿反复试。真有问题，白天再来，带上人。\n你要是非要觉得是地气，先把符贴正了再说。", likes:22 },
+      { author:"ye", authorType:"npc", content:"旧城区那几条巷子确实潮，我上周也脱了两张。建议白天去，带烘干的东西。", likes:7 }
+    ]
+  },
+  {
+    id:10, board:"characters", character:"qin", title:"时间线整理：笔仙事件前后到底发生了什么",
+    author:"qin", authorType:"character", tags:["秦大侠","时间线","笔仙"], time:"2026-10-17 21:00", likes:31, views:720,
+    content:"我把目前能确认的时间点按顺序列了一下，方便新来的同修对照。\n有出入的地方欢迎补充，我会慢慢改。\n不用急，一条一条来。",
+    replies:[
+      { author:"du", authorType:"npc", content:"第三条和第五条之间好像少了一个晚上，我记得那天有巡街记录。", likes:6 },
+      { author:"qin", authorType:"character", content:"谢谢提醒，我回头补上。你方便的话把巡街记录贴一下，我对照着改。", likes:11 }
+    ]
+  },
+  {
+    id:11, board:"characters", character:"hu", title:"琥珀的符纸保养小窍门",
+    author:"hu", authorType:"character", tags:["琥珀","符纸","保养"], time:"2026-10-18 16:20", likes:20, views:388,
+    content:"符纸怕潮也怕晒。收的时候夹在硬纸板里，放一小包干燥剂。别和朱砂盒挤在一起，染色了不好认。",
+    replies:[
+      { author:"fu", authorType:"npc", content:"干燥剂这个学到了，我一直直接塞抽屉。", likes:4 },
+      { author:"tong", authorType:"character", content:"我上次就是染色了，画到一半才发现，白忙。", likes:8 }
+    ]
+  },
+  {
+    id:12, board:"characters", character:"hu", title:"问一下琥珀那种暖色符纸是什么材质",
+    author:"fu", authorType:"npc", tags:["琥珀","符纸","材料"], time:"2026-10-17 14:05", likes:8, views:201,
+    content:"看照片颜色偏暖，是纸本身的问题还是后期？想找同款。",
+    replies:[
+      { author:"hu", authorType:"character", content:"是纸本身的颜色，偏稻草浆那种。不是后期。你找的时候看纤维，太白的反而不好用。", likes:9 },
+      { author:"ye", authorType:"npc", content:"这种纸我见过，旧城区那家纸铺有。", likes:3 }
+    ]
+  },
+  {
+    id:13, board:"characters", character:"tong", title:"新人第一次画符，手抖怎么办？",
+    author:"tong", authorType:"character", tags:["佟装水","画符","新人"], time:"2026-10-18 10:30", likes:15, views:290,
+    content:"我画到一半手抖，线条断了。师傅说断了就得重画。有没有稳手的办法？",
+    replies:[
+      { author:"fu", authorType:"npc", content:"先练直线，别急着画整张。手腕贴桌，别悬空。", likes:5 },
+      { author:"qin", authorType:"character", content:"慢慢来。断了就重画，别硬接。手稳是练出来的，不是急出来的。", likes:13 }
+    ]
+  },
+  {
+    id:14, board:"characters", character:"tong", title:"佟装水同款朱砂哪里买？",
+    author:"hong", authorType:"npc", tags:["佟装水","朱砂"], time:"2026-10-16 15:40", likes:6, views:177,
+    content:"看她帖子里的颜色很正，想问问渠道。",
+    replies:[
+      { author:"tong", authorType:"character", content:"我用的就是普通干性朱砂，别买太细的，太细反而挂不住。", likes:7 },
+      { author:"fu", authorType:"npc", content:"同意，细朱砂画出来容易糊。", likes:2 }
+    ]
+  },
+  {
+    id:15, board:"characters", character:"qing", title:"青龙的巡街路线分析",
+    author:"qing", authorType:"character", tags:["青龙","巡街","路线"], time:"2026-10-17 20:10", likes:19, views:402,
+    content:"旧城区我一般按“三巷—五巷—老粮站—河堤”这个顺序走，逆着走容易漏掉背光面。\n新人跟队的话，先记路线，别急着记符。",
+    replies:[
+      { author:"map", authorType:"npc", content:"我就是逆着走迷路的，原来问题在这。", likes:4 },
+      { author:"ye", authorType:"npc", content:"河堤那段晚上风大，符纸要压边。", likes:6 }
+    ]
+  },
+  {
+    id:16, board:"characters", character:"bai", title:"白虎：遇到脏东西直接上还是先贴符？",
+    author:"bai", authorType:"character", tags:["白虎","实战"], time:"2026-10-18 19:05", likes:17, views:330,
+    content:"看情况。能贴符就先贴符，贴不住再动手。别一上来就冲。",
+    replies:[
+      { author:"bi", authorType:"npc", content:"直球发言，但我信。", likes:3 },
+      { author:"qing", authorType:"character", content:"同意。先判断，再动手。", likes:7 }
+    ]
+  },
+  {
+    id:17, board:"characters", character:"zhu", title:"朱雀的火符到底怎么用",
+    author:"zhu", authorType:"character", tags:["朱雀","火符"], time:"2026-10-17 22:30", likes:13, views:288,
+    content:"火符不是拿来烧东西的，是拿来断路的。用之前先看清楚风向，别把自己圈进去。",
+    replies:[
+      { author:"ye", authorType:"npc", content:"上次有人逆风用，眉毛没了。", likes:5 },
+      { author:"hu", authorType:"character", content:"火符用完记得收灰，别留现场。", likes:6 }
+    ]
+  },
+  {
+    id:18, board:"characters", character:"xuan", title:"玄武：守阵的时候可以睡觉吗？",
+    author:"xuan", authorType:"character", tags:["玄武","守阵"], time:"2026-10-16 23:50", likes:11, views:244,
+    content:"不可以。守阵要醒着。困了就换人。",
+    replies:[
+      { author:"fish", authorType:"npc", content:"简短有力，我记住了。", likes:2 },
+      { author:"qing", authorType:"character", content:"守阵最忌没人换班，别硬撑。", likes:6 }
+    ]
+  },
+
+  {
+    id:19, board:"events", title:"笔仙事件复盘：同学聚会那晚到底发生了什么",
+    author:"du", authorType:"npc", tags:["笔仙","复盘","时间线"], time:"2026-10-19 02:00", likes:26, views:690,
+    content:"按目前能确认的信息整理：聚会、笔仙、送不走、缠上。中间有几个时间点对不上，欢迎补充。",
+    replies:[
+      { author:"qin", authorType:"character", content:"整理得很细。对不上的那几处，可能和后来的读档有关。先别急着下结论。", likes:14 },
+      { author:"bi", authorType:"npc", content:"所以同学聚会真的不要乱玩笔仙。", likes:5 }
+    ]
+  },
+  {
+    id:20, board:"events", title:"旧城区三巷连续三晚符纸脱落记录",
+    author:"ye", authorType:"npc", tags:["旧城区","符纸","记录"], time:"2026-10-18 23:15", likes:18, views:377,
+    content:"第一晚两张，第二晚三张，第三晚一张。位置都在同一面墙。湿度正常，风向正常。已报队里。",
+    replies:[
+      { author:"fu", authorType:"npc", content:"同一面墙的话，先查墙里有没有东西，别只换符。", likes:7 },
+      { author:"luo", authorType:"character", content:"查墙。别查符。符没问题。", likes:12 }
+    ]
+  },
+  {
+    id:21, board:"events", title:"半夜听到楼道有人念咒，要不要出去看？",
+    author:"bi", authorType:"npc", tags:["楼道","求助"], time:"2026-10-17 01:30", likes:10, views:255,
+    content:"声音很清楚，但猫眼外面没人。念的内容听不清，像在数数。",
+    replies:[
+      { author:"qing", authorType:"character", content:"别开门。先听方向，记时间。天亮再查。", likes:9 },
+      { author:"ye", authorType:"npc", content:"这种情况先别出去，记下来报队里。", likes:4 }
+    ]
+  },
+  {
+    id:22, board:"events", title:"镜子里的影子比我慢半拍",
+    author:"fish", authorType:"npc", tags:["镜子","异常"], time:"2026-10-16 00:20", likes:13, views:299,
+    content:"连续两晚。不是灯光问题，我试过换灯泡。",
+    replies:[
+      { author:"hu", authorType:"character", content:"先遮镜，别盯着看。明天白天再处理。", likes:8 },
+      { author:"bi", authorType:"npc", content:"看得我后背发凉。", likes:2 }
+    ]
+  },
+  {
+    id:23, board:"events", title:"巡街遇到“问路”的老太太，差点跟走",
+    author:"map", authorType:"npc", tags:["巡街","问路"], time:"2026-10-15 22:40", likes:15, views:341,
+    content:"她一直指巷子深处，说家在里面。我走了两步觉得不对，回头人没了。",
+    replies:[
+      { author:"ye", authorType:"npc", content:"晚上问路的，先别带路。指方向就行。", likes:6 },
+      { author:"qing", authorType:"character", content:"这种情况记位置，白天再去看。别跟着走。", likes:8 }
+    ]
+  },
+
+  {
+    id:24, board:"practice", title:"符纸贴法图解（新手向）",
+    author:"fu", authorType:"npc", tags:["符纸","图解","新手"], time:"2026-10-18 15:00", likes:22, views:511,
+    content:"朱砂面朝外，四角压实，中间留一点空。返潮墙面先烘。别用透明胶。",
+    replies:[
+      { author:"map", authorType:"npc", content:"透明胶这个我中枪了。", likes:3 },
+      { author:"hu", authorType:"character", content:"补充一点：贴之前把手擦干，手汗也会影响。", likes:9 }
+    ]
+  },
+  {
+    id:25, board:"practice", title:"朱砂、墨、血：三种画符材料对比",
+    author:"ye", authorType:"npc", tags:["朱砂","材料","对比"], time:"2026-10-17 18:10", likes:16, views:366,
+    content:"朱砂稳，墨快，血看人。新手先用朱砂，别一上来就试偏门。",
+    replies:[
+      { author:"fu", authorType:"npc", content:"同意。血符不是谁都能用。", likes:5 },
+      { author:"luo", authorType:"character", content:"先把朱砂画明白，再谈别的。", likes:11 }
+    ]
+  },
+  {
+    id:26, board:"practice", title:"大地图探索怎么走不迷路",
+    author:"map", authorType:"npc", tags:["大地图","探索"], time:"2026-10-16 20:00", likes:12, views:288,
+    content:"我每次都在河堤那边绕圈。有没有固定走法？",
+    replies:[
+      { author:"qing", authorType:"character", content:"先记地标，再记路。河堤以桥为界，别过桥再回头。", likes:10 },
+      { author:"ye", authorType:"npc", content:"带粉笔，拐弯画一道。", likes:4 }
+    ]
+  },
+  {
+    id:27, board:"practice", title:"属性与好感度对捉鬼成功率的影响",
+    author:"du", authorType:"npc", tags:["属性","好感度","养成"], time:"2026-10-15 21:30", likes:14, views:330,
+    content:"体感属性影响判定，好感度影响剧情分支。两者不是一回事，别混。",
+    replies:[
+      { author:"qin", authorType:"character", content:"大致是这样。属性稳下限，好感度开分支。慢慢来，不用急着刷。", likes:12 },
+      { author:"map", authorType:"npc", content:"我一直以为好感度也加成功率。", likes:3 }
+    ]
+  },
+
+  {
+    id:28, board:"notes", title:"手绘符样分享：镇宅、驱邪、安神",
+    author:"fu", authorType:"npc", tags:["符样","手绘","分享"], time:"2026-10-18 11:00", likes:24, views:455,
+    content:"三张常用的，线条尽量画清楚。新手先临摹，别自己改。",
+    replies:[
+      { author:"tong", authorType:"character", content:"镇宅那张我临摹过，线条比我想的难。", likes:6 },
+      { author:"hu", authorType:"character", content:"安神那张可以再压一压角，更稳。", likes:7 }
+    ]
+  },
+  {
+    id:29, board:"notes", title:"捉鬼手记：第一次独立出任务",
+    author:"ye", authorType:"npc", tags:["手记","任务"], time:"2026-10-17 23:40", likes:17, views:312,
+    content:"紧张，但没出错。符贴住了，人也带回来了。记录一下。",
+    replies:[
+      { author:"qing", authorType:"character", content:"第一次能稳住就不错。", likes:8 },
+      { author:"bi", authorType:"npc", content:"恭喜，至少没像我一样手抖。", likes:3 }
+    ]
+  },
+
+  {
+    id:30, board:"lounge", title:"巡夜回来，鞋底全是泥，先摸会儿鱼",
+    author:"fish", authorType:"npc", tags:["摸鱼","巡夜"], time:"2026-10-19 03:10", likes:9, views:199,
+    content:"旧城区那泥，洗了半小时。有没有同款。",
+    replies:[
+      { author:"map", authorType:"npc", content:"同款。我现在直接穿雨靴。", likes:3 },
+      { author:"ye", authorType:"npc", content:"雨靴+1，别穿好鞋去旧城区。", likes:5 }
+    ]
+  }
+];
+
+const LS = {
+  user:"ghost_current_user",
+  accounts:"ghost_accounts",
+  likes:"ghost_likes",
+  favs:"ghost_favs",
+  replies:"ghost_user_replies",
+  notifs:"ghost_notifs",
+  readNotifs:"ghost_read_notifs"
+};
+
+const state = {
+  view:"home",
+  param:null,
+  searchInput:"",
+  searchKeyword:"",
+  replyDraft:"",
+  user:null,
+  likes:{},
+  favs:{},
+  userReplies:{},
+  notifications:[],
+  collapsed:{},
+  showLogin:false,
+  loginMode:"login",
+  loginError:""
+};
+
+function loadJSON(key, fallback){
+  try{ const v = localStorage.getItem(key); return v ? JSON.parse(v) : fallback; }
+  catch(e){ return fallback; }
+}
+function saveJSON(key, val){ try{ localStorage.setItem(key, JSON.stringify(val)); }catch(e){} }
+
+function loadState(){
+  state.user = loadJSON(LS.user, null);
+  state.likes = loadJSON(LS.likes, {});
+  state.favs = loadJSON(LS.favs, {});
+  state.userReplies = loadJSON(LS.replies, {});
+  state.notifications = loadJSON(LS.notifs, [
+    { id:1, text:"夜巡小队长 回复了你的帖子《新人报到：第一次巡夜需要准备什么？》", time:"10 分钟前", read:false },
+    { id:2, text:"符纸收藏家 赞了你的回复", time:"1 小时前", read:false }
+  ]);
+}
+loadState();
+
+function persistUser(){ saveJSON(LS.user, state.user); }
+function persistLikes(){ saveJSON(LS.likes, state.likes); }
+function persistFavs(){ saveJSON(LS.favs, state.favs); }
+function persistReplies(){ saveJSON(LS.replies, state.userReplies); }
+function persistNotifs(){ saveJSON(LS.notifs, state.notifications); }
+
+function esc(s){
+  return String(s == null ? "" : s).replace(/[&<>"']/g, m => (
+    { "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;" }[m]
+  ));
+}
+function person(key, type){
+  if(type === "character"){
+    const c = CHARACTERS[key] || { name:"未知角色", avatar:DEFAULT_NPC_AVATAR, title:"" };
+    return { name:c.name, avatar:c.avatar, title:c.title, type:"character" };
+  }
+  const n = NPCS[key] || { name:"匿名坛友" };
+  return { name:n.name, avatar:DEFAULT_NPC_AVATAR, title:"普通坛友", type:"npc" };
+}
+function postById(id){ return POSTS.find(p => p.id === Number(id)); }
+function boardById(id){ return BOARDS.find(b => b.id === id); }
+function unreadCount(){ return state.notifications.filter(n => !n.read).length; }
+function isLoggedIn(){ return !!state.user; }
+
+window.imgFallback = function(el, type){
+  if(type === "avatar"){
+    el.onerror = null;
+    el.src = DEFAULT_NPC_AVATAR;
+  }else{
+    const box = el.parentElement;
+    if(box) box.classList.add("missing");
+    el.style.display = "none";
+  }
+};
+
+function avatarHTML(p, cls){
+  const c = cls || "avatar"
